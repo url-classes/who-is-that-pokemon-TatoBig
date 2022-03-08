@@ -15,14 +15,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author Miguel Matul <https://github.com/MigueMat4>
  */
 public class frmMain extends javax.swing.JFrame {
-    
-    Pokemon whoIsThatPokemon; // objeto de la clase que hace match con los datos de la API
+
+    Pokemon pokemon1; // objeto de la clase que hace match con los datos de la API
+    Pokemon pokemon2;
+    Pokemon pokemon3;
+    Pokemon pokemon4;
     Pokedex dexter = new Pokedex();
     PokeViewer visor = new PokeViewer();
     Reloj horaActual = new Reloj();
@@ -33,36 +37,68 @@ public class frmMain extends javax.swing.JFrame {
     public frmMain() {
         initComponents();
         horaActual.start();
+        visor.start();
     }
-    
-    public class PokeViewer {
-        public void mostrarSprites() {
-            if (whoIsThatPokemon != null){
-                try {
-                    lblSprite.setText("");
-                    // obtengo la url del listado de cada uno de los sprites que me dio la API
-                    URL url = new URL(whoIsThatPokemon.getSprites().get("front_default").toString());
-                    Image img = ImageIO.read(url);
-                    lblSprite.setIcon(new ImageIcon(img));
-                    // 1 segundo para cada cambio de sprite
-                    Thread.sleep(1000);
-                        
-                    url = new URL(whoIsThatPokemon.getSprites().get("back_default").toString());
-                    img = ImageIO.read(url);
-                    lblSprite.setIcon(new ImageIcon(img));
-                    Thread.sleep(1000);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (InterruptedException | IOException ex) {
-                    Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+
+    public class PokeViewer extends Thread {
+
+        private boolean run;
+        private Pokemon pokemonActual;
+        private Integer posicion;
+
+        public PokeViewer() {
+            this.run = false;
+        }
+
+        public boolean isRun() {
+            return run;
+        }
+
+        public void setRun(boolean run) {
+            this.run = run;
+        }
+
+        public Pokemon getPokemonActual() {
+            return pokemonActual;
+        }
+
+        public void setPokemonActual(Pokemon pokemonActual) {
+            this.pokemonActual = pokemonActual;
+        }
+
+        public Integer getPosicion() {
+            return posicion;
+        }
+
+        public void setPosicion(Integer posicion) {
+            this.posicion = posicion;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                // En las pruebas, cuando no esta el print, no reconoce como que hubiera pokemon asignado
+                System.out.println(pokemonActual);
+                if (pokemonActual != null && this.run == true) {
+                    try {
+                        lblSprite.setText("");
+                        // obtengo la url del listado de cada uno de los sprites que me dio la API
+                        URL url = new URL(pokemonActual.getSprites().get("front_default").toString());
+                        Image img = ImageIO.read(url);
+                        if (this.run) lblSprite.setIcon(new ImageIcon(img));
+                        // 1 segundo para cada cambio de sprite
+                        Thread.sleep(1000);
+
+                        url = new URL(pokemonActual.getSprites().get("back_default").toString());
+                        img = ImageIO.read(url);
+                        if (this.run) lblSprite.setIcon(new ImageIcon(img));
+                        Thread.sleep(1000);
+                    } catch (MalformedURLException ex) {
+                        Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InterruptedException | IOException ex) {
+                        Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-            }
-            else{
-                lblSprite.setText("?");
-                btnPokemon1.setText("???");
-                btnPokemon2.setText("???");
-                btnPokemon3.setText("???");
-                btnPokemon4.setText("???");
             }
         }
     }
@@ -91,12 +127,32 @@ public class frmMain extends javax.swing.JFrame {
         lblSprite.setText("?");
 
         btnPokemon1.setText("???");
+        btnPokemon1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPokemon1ActionPerformed(evt);
+            }
+        });
 
         btnPokemon2.setText("???");
+        btnPokemon2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPokemon2ActionPerformed(evt);
+            }
+        });
 
         btnPokemon3.setText("???");
+        btnPokemon3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPokemon3ActionPerformed(evt);
+            }
+        });
 
         btnPokemon4.setText("???");
+        btnPokemon4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPokemon4ActionPerformed(evt);
+            }
+        });
 
         btnJugar.setText("Jugar");
         btnJugar.addActionListener(new java.awt.event.ActionListener() {
@@ -166,18 +222,98 @@ public class frmMain extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnJugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJugarActionPerformed
-        try {
-            whoIsThatPokemon = dexter.buscarPokemon();
-            btnPokemon1.setText(whoIsThatPokemon.getName());
-            btnPokemon2.setText(whoIsThatPokemon.getName());
-            btnPokemon3.setText(whoIsThatPokemon.getName());
-            btnPokemon4.setText(whoIsThatPokemon.getName());
-            visor.mostrarSprites();
-        } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Thread thread = new Thread(() -> {
+            try {
+                pokemon1 = dexter.buscarPokemon();
+                btnPokemon1.setText(pokemon1.getName());
+                pokemon2 = dexter.buscarPokemon();
+                btnPokemon2.setText(pokemon2.getName());
+                pokemon3 = dexter.buscarPokemon();
+                btnPokemon3.setText(pokemon3.getName());
+                pokemon4 = dexter.buscarPokemon();
+                btnPokemon4.setText(pokemon4.getName());
+                if ((int) Math.floor(Math.random() * 4 + 1) == 1) {
+                    System.out.println("1");
+                    visor.setPokemonActual(pokemon1);
+                    visor.setPosicion(1);
+                }
+                if ((int) Math.floor(Math.random() * 4 + 1) == 2) {
+                    System.out.println("2");
+                    visor.setPokemonActual(pokemon2);
+                    visor.setPosicion(2);
+                }
+                if ((int) Math.floor(Math.random() * 4 + 1) == 3) {
+                    System.out.println("3");
+                    visor.setPokemonActual(pokemon3);
+                    visor.setPosicion(3);
+                }
+                if ((int) Math.floor(Math.random() * 4 + 1) == 4) {
+                    System.out.println("4");
+                    visor.setPokemonActual(pokemon4);
+                    visor.setPosicion(4);
+                }
+                visor.setRun(true);
+            } catch (IOException ex) {
+                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(frmMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        thread.start();
         btnJugar.setText("Jugar de nuevo");
     }//GEN-LAST:event_btnJugarActionPerformed
+
+    public void reiniciarJuego () {
+        visor.setRun(false);
+        btnPokemon1.setText("???");
+        btnPokemon2.setText("???");
+        btnPokemon3.setText("???");
+        btnPokemon4.setText("???");
+        lblSprite.setText("?");
+        lblSprite.setIcon(null);
+    }
+    
+    public void ganaste() {
+        JOptionPane.showMessageDialog(null, "Felicidades, has ganado");
+        reiniciarJuego();
+    }
+
+    public void perdiste() {
+        JOptionPane.showMessageDialog(null, "Perdiste, vuelve a internarlo.", "Perdiste", JOptionPane.ERROR_MESSAGE);
+        reiniciarJuego();
+    }
+
+    private void btnPokemon4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPokemon4ActionPerformed
+        if (visor.getPosicion() == 4) {
+            ganaste();
+        } else {
+            perdiste();
+        }
+    }//GEN-LAST:event_btnPokemon4ActionPerformed
+
+    private void btnPokemon3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPokemon3ActionPerformed
+        if (visor.getPosicion() == 3) {
+            ganaste();
+        } else {
+            perdiste();
+        }
+    }//GEN-LAST:event_btnPokemon3ActionPerformed
+
+    private void btnPokemon2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPokemon2ActionPerformed
+        if (visor.getPosicion() == 2) {
+            ganaste();
+        } else {
+            perdiste();
+        }
+    }//GEN-LAST:event_btnPokemon2ActionPerformed
+
+    private void btnPokemon1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPokemon1ActionPerformed
+        if (visor.getPosicion() == 1) {
+            ganaste();
+        } else {
+            perdiste();
+        }
+    }//GEN-LAST:event_btnPokemon1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -213,28 +349,32 @@ public class frmMain extends javax.swing.JFrame {
             }
         });
     }
-    
+
     // clase para la hora del sistema. ¡No modificar!
     public class Reloj extends Thread {
+
         Calendar calendario;
-        
+
         @Override
         public void run() {
             while (true) {
                 String horaSistema = "";
                 calendario = Calendar.getInstance();
-                if (calendario.get(Calendar.HOUR_OF_DAY)<10)
-                    horaSistema += String.valueOf("0"+calendario.get(Calendar.HOUR_OF_DAY)) + ":";
-                else
+                if (calendario.get(Calendar.HOUR_OF_DAY) < 10) {
+                    horaSistema += String.valueOf("0" + calendario.get(Calendar.HOUR_OF_DAY)) + ":";
+                } else {
                     horaSistema += String.valueOf(calendario.get(Calendar.HOUR_OF_DAY)) + ":";
-                if (calendario.get(Calendar.MINUTE)<10)
-                    horaSistema += String.valueOf("0"+calendario.get(Calendar.MINUTE)) + ":";
-                else
+                }
+                if (calendario.get(Calendar.MINUTE) < 10) {
+                    horaSistema += String.valueOf("0" + calendario.get(Calendar.MINUTE)) + ":";
+                } else {
                     horaSistema += String.valueOf(calendario.get(Calendar.MINUTE)) + ":";
-                if (calendario.get(Calendar.SECOND)<10)
-                    horaSistema += String.valueOf("0"+calendario.get(Calendar.SECOND)) + ":";
-                else
+                }
+                if (calendario.get(Calendar.SECOND) < 10) {
+                    horaSistema += String.valueOf("0" + calendario.get(Calendar.SECOND)) + ":";
+                } else {
                     horaSistema += String.valueOf(calendario.get(Calendar.SECOND)) + ":";
+                }
                 horaSistema += String.valueOf(calendario.get(Calendar.MILLISECOND)) + " hrs";
                 lblHoraSistema.setText(horaSistema);
                 try {
