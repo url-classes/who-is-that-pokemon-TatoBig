@@ -16,26 +16,27 @@ import org.codehaus.jackson.map.ObjectMapper;
  *
  * @author Miguel Matul <https://github.com/MigueMat4>
  */
-
 // clase que conecta a la API y obtiene los datos del pokémon buscado
 public class Pokedex {
+
     private static final String POKEMON_API_URL = "https://pokeapi.co/api/v2/pokemon/";
     private int numeroPokemon;
-    
-    public Pokedex(){
+
+    public Pokedex() {
         numeroPokemon = 1;
     }
-        
-    public Pokemon buscarPokemon() throws IOException, InterruptedException{
+
+    public Pokemon buscarPokemon() throws IOException, InterruptedException {
+        Thread hilo = new Thread();
         numeroPokemon = (int) Math.floor(Math.random() * 151 + 1);
         System.out.println("Conectando a la API...");
         // código para conectarse a la API y descargar los datos.
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .header("Accept", "application/json")
-                    .uri(URI.create(POKEMON_API_URL+numeroPokemon))
-                    .build();
+                .GET()
+                .header("Accept", "application/json")
+                .uri(URI.create(POKEMON_API_URL + numeroPokemon))
+                .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println("¡Conexión exitosa! Descargando datos...");
         ObjectMapper mapper = new ObjectMapper();
